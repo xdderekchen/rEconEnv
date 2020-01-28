@@ -25,7 +25,7 @@ from https://www.fhfa.gov/DataTools/Downloads/Pages/House-Price-Index-Datasets.a
 
 This package will grab data from these websites and return data in R data.table formats.
 
-## Usage  
+## Usage    
 
 (for plotting data, read [here](file:///C:/AWS/rEconEnv/Examples.html)  )
 
