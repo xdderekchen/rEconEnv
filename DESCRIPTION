@@ -1,0 +1,24 @@
+Package: rEconEnv
+Type: Package
+Title: Get Economic Environment data like historical Home Price Index data and Interest data.
+Version: 0.1.0
+Author: Xiangdong Chen
+Maintainer: The package maintainer <dxdychen@gmai.com>
+Description: The package will get historical Home Price Index from data https://www.fhfa.gov/DataTools/Downloads/Pages/House-Price-Index-Datasets.aspx
+            and histocal Interest Rate data from http://www.freddiemac.com/pmms.
+            The data will be returned in data.table format.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports:
+    readxl,
+    data.table,
+    magrittr,
+    curl,
+    lubridate,
+    dygraphs
+Depends:
+    data.table,
+    magrittr
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.0.2
