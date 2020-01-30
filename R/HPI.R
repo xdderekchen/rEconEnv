@@ -35,7 +35,7 @@ convert_quarterly_to_monthly <- function(dt, group_var, from_year)
 #'
 #' @description get ZIP3 level Home Price Index data
 #'
-#' @param zip3file The filename for the data downloaded from "https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_3zip.xlsx". If this is null, the function will connect to the download site.
+#' @param zip3file The filename for the data downloaded from "https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_3zip.xlsx". If this is null, the function will connect to the site and download data.
 #' @param from_year Four digits representing the data starting year.
 #' @param out.Monthly TRUE means Monthly data, FASLE means Quarterly data.
 #'
@@ -50,27 +50,54 @@ convert_quarterly_to_monthly <- function(dt, group_var, from_year)
 get_ZIP3_hpi <- function(zip3file=NULL, from_year=NULL, out.Monthly=TRUE)
 {
   default_file <- "https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_3zip.xlsx"
-  zip3file <- default_file
   fmt = "xlsx"
-  temp_file <- tempfile(fileext = paste0(".", fmt))
-  u <- curl::curl_fetch_memory(zip3file)
-  writeBin(object = u$content, con = temp_file)
-  dt <- readxl::read_excel(path=temp_file, skip=4) %>%
-    setnames(old = "Index (NSA)", new = "Index") %>%
-    setnames(old = "Three-Digit ZIP Code", new = "ZIP3")
-  dt$ZIP3 = sprintf("%03d", dt$ZIP3)
-  dt$YearQ = paste0(dt$Year, "Q", dt$Quarter)
-  dt <- data.table(dt)
-
-  if (is.null(from_year)) {
-    from_year = 1995
-  }
-  if (out.Monthly == FALSE)
+  dt <- NULL
+  
+  tryCatch(
+    {
+      isRemote = FALSE
+      inputfile = NULL
+      if (validate_file(zip3file,fmt ))
+      {
+        inputfile = zip3file
+      } else
+      {
+        inputfile = get_remote_file(default_file, fmt)
+        isRemote = TRUE
+      }
+      if (!is.null(inputfile))
+      {
+        dt <- readxl::read_excel(path=inputfile, skip=4)
+        if (isRemote){
+          unlink(inputfile) # delete the temp file
+        }
+      }
+    },
+    error=function(e) {
+      message(paste("Failed to read file!"))
+      message(e)
+    }
+  )
+  if (!is.null(dt))
   {
-    return (dt[Year>=from_year, c("ZIP3", "YearQ", "Index")]%>% setnames(old = c("YearQ"), new = c('Date')))
+    dt %>% setnames(old = "Index (NSA)", new = "Index") %>%
+           setnames(old = "Three-Digit ZIP Code", new = "ZIP3")
+    dt$ZIP3 = sprintf("%03d", dt$ZIP3)
+    dt$YearQ = paste0(dt$Year, "Q", dt$Quarter)
+    dt <- data.table(dt)
+
+    from_year =ifelse(is.null(from_year), 1995, from_year)
+    
+     if (out.Monthly == FALSE)
+     {
+         return (dt[Year>=from_year, c("ZIP3", "YearQ", "Index")]%>% setnames(old = c("YearQ"), new = c('Date')))
+     } else
+     {
+         return (convert_quarterly_to_monthly(dt, "ZIP3", from_year)%>% setnames(old = c("YearMM"), new = c('Date')))
+     }
   } else
   {
-    return (convert_quarterly_to_monthly(dt, "ZIP3", from_year)%>% setnames(old = c("YearMM"), new = c('Date')))
+     return (NULL)
   }
 }
 
@@ -78,7 +105,7 @@ get_ZIP3_hpi <- function(zip3file=NULL, from_year=NULL, out.Monthly=TRUE)
 #'
 #' @description get State level Home Price Index data
 #'
-#' @param statefile The filename for the data downloaded from "https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_state.csv". If this is null, the function will connect to the download site.
+#' @param statefile The filename for the data downloaded from "https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_state.csv". If this is null, the function will connect to the site and download file.
 #' @param from_year Four digits representing the data starting year.
 #' @param out.Monthly TRUE means Monthly data, FASLE means Quarterly data.
 #'
@@ -90,29 +117,50 @@ get_ZIP3_hpi <- function(zip3file=NULL, from_year=NULL, out.Monthly=TRUE)
 #'       statehpi_m    <- get_State_hpi(from_year=2010, out.Monthly=TRUE)
 #'       # get recent States Home Price Index (quarterly) since 2000
 #'       statehpi_Q    <- get_State_hpi(from_year=2000, out.Monthly=FALSE)
-get_State_hpi <- function(statefile, from_year=NULL, out.Monthly=TRUE)
+get_State_hpi <- function(statefile=NULL, from_year=NULL, out.Monthly=TRUE)
 {
   default_file <- "https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_state.csv"
-  statefile = default_file
   fmt = "csv"
-
-  temp_file <- tempfile(fileext = paste0(".", fmt))
-  u <- curl::curl_fetch_memory(statefile)
-  writeBin(object = u$content, con = temp_file)
-  dt <- data.table::fread(file = temp_file, header=FALSE,sep=",",
-                          stringsAsFactors=FALSE,
-                          col.name = c("State" , "Year", "Quarter", "Index"),
-                          colClasses=c("character","integer","integer","numeric"))
-  if (is.null(from_year)) {
-    from_year = 1995
+  dt <- NULL
+ 
+  tryCatch(
+    {
+      isRemote = FALSE
+      inputfile = NULL
+      if (validate_file(statefile,fmt ))
+      {
+        inputfile = statefile
+      } else
+      {
+        inputfile = get_remote_file(default_file, fmt)
+        isRemote = TRUE
+      }
+      if (!is.null(inputfile))
+      {
+        dt <- data.table::fread(file = inputfile, header=FALSE,sep=",",
+                                stringsAsFactors=FALSE,
+                                col.name = c("State" , "Year", "Quarter", "Index"),
+                                colClasses=c("character","integer","integer","numeric"))
+        if (isRemote){
+          unlink(inputfile) # delete the temp file
+        }
+      }
+    },
+    error=function(e) {
+      message(paste("Failed to read file!"))
+      message(e)
+    }
+  )
+  
+  if (is.null(dt))
+  {
+     return (NULL)
   }
-  dt <- dt[Year>=from_year]
+ 
+  dt <- dt[Year>=ifelse(is.null(from_year), 1995, from_year)]
   dt$Index <- nafill(as.numeric(dt$Index),type="locf")
-
   dt[, YearQ:= paste0(Year, "Q", Quarter)]
-  if (is.null(from_year)) {
-    from_year = 1995
-  }
+ 
   if (out.Monthly == FALSE)
   {
     return (dt[Year>=from_year, c("State", "YearQ", "Index")]%>% data.table::setnames(old = c("YearQ"), new = c('Date')))
@@ -128,7 +176,8 @@ get_State_hpi <- function(statefile, from_year=NULL, out.Monthly=TRUE)
 #'
 #' @description get National Home Price Index data
 #'
-#' @param usfile The filename for the data downloaded from "https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_us_and_census.csv". If this is null, the function will connect to the download site.
+#' @param usfile The filename for the data downloaded from "https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_us_and_census.csv".
+#'               If this is null, the function will connect to the site and then download file.
 #' @param from_year Four digits representing the data starting year.
 #' @param out.Monthly TRUE means Monthly data, FASLE means Quarterly data.
 #'
@@ -140,24 +189,50 @@ get_State_hpi <- function(statefile, from_year=NULL, out.Monthly=TRUE)
 #'       ushpi_m    <- get_US_hpi(from_year=2010, out.Monthly=TRUE)
 #'       #  get recent National (US) Home Price Index (quarterly) since 2000
 #'       ushpi_Q    <- get_US_hpi(from_year=2000, out.Monthly=FALSE)
-get_US_hpi <- function(usfile, from_year=NULL,  out.Monthly=TRUE)
+get_US_hpi <- function(usfile=NULL, from_year=NULL,  out.Monthly=TRUE)
 {
   default_file <- "https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_us_and_census.csv"
-  usfile = default_file
   fmt = "csv"
-  temp_file <- tempfile(fileext = paste0(".", fmt))
-  u <- curl::curl_fetch_memory(usfile)
-  writeBin(object = u$content, con = temp_file)
-  dt <- data.table::fread(file = temp_file, header=FALSE,sep=",",
-                          stringsAsFactors=FALSE,
-                          col.name = c("State" , "Year", "Quarter", "Index"),
-                          colClasses=c("character","integer","integer","numeric"))
-  dt = dt[State == "USA"]
-
-  dt = dt[, YearQ:= paste0(Year, "Q", Quarter)]
-  if (is.null(from_year)) {
-    from_year = 1995
+  dt <- NULL
+  
+  tryCatch(
+    {
+      isRemote = FALSE
+      inputfile = NULL
+      if (validate_file(usfile,fmt ))
+      {
+        inputfile = usfile
+      } else
+      {
+        inputfile = get_remote_file(default_file, fmt)
+        isRemote = TRUE
+      }
+      if (!is.null(inputfile))
+      {
+        dt <- data.table::fread(file = inputfile, header=FALSE,sep=",",
+                                stringsAsFactors=FALSE,
+                                col.name = c("State" , "Year", "Quarter", "Index"),
+                                colClasses=c("character","integer","integer","numeric"))
+        if (isRemote){
+          unlink(inputfile) # delete the temp file
+        }
+      }
+    },
+    error=function(e) {
+      message(paste("Failed to read file!"))
+      message(e)
+    }
+  )
+  
+  if (is.null(dt))
+  {
+    return (NULL)
   }
+  
+  dt = dt[State == "USA"]
+  dt = dt[, YearQ:= paste0(Year, "Q", Quarter)]
+  from_year =ifelse(is.null(from_year), 1995, from_year)
+  
   if (out.Monthly == FALSE)
   {
     return (dt[Year>=from_year, c("State", "YearQ", "Index"), with = FALSE]%>% setnames(old = c("YearQ"), new = c('Date')))

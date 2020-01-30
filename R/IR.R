@@ -1,9 +1,9 @@
 
 
-#in_ir_file <- "http://www.freddiemac.com/pmms/docs/30yr_pmmsmnth.xls"
 #' get Interest Rate
 #'
-#' @param in_ir_file remote file or local file downloaded from http://www.freddiemac.com/pmms/docs/30yr_pmmsmnth.xls or http://www.freddiemac.com/pmms/docs/15yr_pmmsmnth.xls
+#' @param in_ir_file a file downloaded from http://www.freddiemac.com/pmms/docs/30yr_pmmsmnth.xls or http://www.freddiemac.com/pmms/docs/15yr_pmmsmnth.xls
+#' @param default_file the remote file on http://www.freddiemac.com/pmms/docs
 #' @param from_year  Four digits representing the data starting year.
 #'
 #' @return
@@ -11,24 +11,46 @@
 #'
 #' @examples
 #'      ir30file <- "http://www.freddiemac.com/pmms/docs/30yr_pmmsmnth.xls"
-#'      get_IR_data(ir30file, from_year =2017)
+#'      get_IR_data(in_ir_file= NULL, default_file=ir30file, from_year =2017)
 #'
 #'      ir15file <- "http://www.freddiemac.com/pmms/docs/15yr_pmmsmnth.xls"
-#'      get_IR_data(ir15file, from_year =2010)
-#in_ir_file <- "http://www.freddiemac.com/pmms/docs/30yr_pmmsmnth.xls"
-#from_year =1970
-get_IR_data <- function(in_ir_file, from_year=NULL)
+#'      get_IR_data(in_ir_file= NULL, default_file=ir15file, from_year =2010)
+get_IR_data <- function(in_ir_file, default_file, from_year)
 {
   requireNamespace("data.table")
+
   fmt = "xls"
-  temp_file <- tempfile(fileext = paste0(".", fmt))
-  u <- curl::curl_fetch_memory(in_ir_file)
-  a <- u$content
-  writeBin(object = u$content, con = temp_file)
-  #print(temp_file)
-
-  rawdata  <- suppressWarnings(readxl::read_excel(path=temp_file, col_names = FALSE, skip =2 ))
-
+  dt <- NULL
+  tryCatch(
+    {
+      isRemote = FALSE
+      inputfile = NULL
+      if (validate_file(in_ir_file,fmt ))
+      {
+        inputfile = in_ir_file
+      } else
+      {
+        inputfile = get_remote_file(default_file, fmt)
+        isRemote = TRUE
+      }
+      if (!is.null(inputfile))
+      {
+        dt <- suppressWarnings(readxl::read_excel(path=inputfile, col_names = FALSE, skip =2 ))
+        if (isRemote){
+          unlink(inputfile) # delete the temp file
+        }
+      }
+    },
+    error=function(e) {
+      message(paste("Failed to read file!"))
+      message(e)
+    }
+  )
+  
+  if (is.null(dt))
+  {
+    return (NULL)
+  }
   remove_all_NA <- function(df, re_names = TRUE)
   {
     df0 <- Filter(function(x)!all(is.na(x)), df)
@@ -38,10 +60,9 @@ get_IR_data <- function(in_ir_file, from_year=NULL)
     return (df0)
   }
 
-  rawdata0 <- remove_all_NA(rawdata)
-  if (is.null(from_year)) {
-    from_year = 1970
-  }
+  rawdata0 <- remove_all_NA(dt)
+  from_year =ifelse(is.null(from_year), 1970, from_year)
+
 
   MonNames = "January,February,March,April,May,June,July,August,September,October,November,December"
   MonNames = unlist(strsplit(MonNames, ","))
@@ -85,8 +106,9 @@ get_IR_data <- function(in_ir_file, from_year=NULL)
   return (ir_data)
 }
 
-#' get FRM 30yr  interest rate
+#' get FRM 30yr interest rate
 #'
+#' @param irfile The filename for the data downloaded from "http://www.freddiemac.com/pmms/docs/30yr_pmmsmnth.xls". If this is null, the function will connect to the site and download data.
 #' @param from_year Four digits representing the data starting year.
 #'
 #' @return
@@ -95,15 +117,16 @@ get_IR_data <- function(in_ir_file, from_year=NULL)
 #' @examples
 #'     irdata <- get_IR_FRM30()
 #'
-get_IR_FRM30 <- function(from_year = NULL)
+get_IR_FRM30 <- function(irfile=NULL, from_year = NULL)
 {
   ir30file <- "http://www.freddiemac.com/pmms/docs/30yr_pmmsmnth.xls"
-  return (get_IR_data(ir30file, from_year))
+  return (get_IR_data(in_ir_file=irfile, default_file =ir30file, from_year))
 }
 
 
 #' get FRM 15yr interest rate
 #'
+#' @param irfile The filename for the data downloaded from "http://www.freddiemac.com/pmms/docs/15yr_pmmsmnth.xls". If this is null, the function will connect to the site and download data.
 #' @param from_year Four digits representing the data starting year.
 #'
 #' @return
@@ -112,16 +135,18 @@ get_IR_FRM30 <- function(from_year = NULL)
 #' @examples
 #'      irdata <- get_IR_FRM15()
 #'
-get_IR_FRM15 <- function(from_year = NULL)
+get_IR_FRM15 <- function(irfile=NULL, from_year = NULL)
 {
   ir15file <- "http://www.freddiemac.com/pmms/docs/15yr_pmmsmnth.xls"
-  return (get_IR_data(ir15file, from_year))
+  return (get_IR_data(in_ir_file=irfile, default_file =ir15file, from_year))
 
 }
 
 
 #' get FRM 30yr and 15yr interest rate
 #'
+#' @param irfile The filename for the data downloaded from "http://www.freddiemac.com/pmms/docs/15yr_pmmsmnth.xls". If this is null, the function will connect to the site and download data.
+#' @param irfile The filename for the data downloaded from "http://www.freddiemac.com/pmms/docs/30yr_pmmsmnth.xls". If this is null, the function will connect to the site and download data.
 #' @param from_year Four digits representing the data starting year.
 #'
 #' @return
@@ -129,15 +154,15 @@ get_IR_FRM15 <- function(from_year = NULL)
 #'
 #' @examples
 #'     irdata <- get_IR_FRM_15_30()
-get_IR_FRM_15_30 <- function(from_year = NULL)
+get_IR_FRM_15_30 <- function(irfile15=NULL, irfile30=NULL, from_year = NULL)
 {
   if (is.null(from_year)) {
     from_year = 2000
   }
 
-  ir15 = get_IR_FRM15(from_year)
+  ir15 = get_IR_FRM15(irfile15, from_year)
   setnames(ir15, old = c("IR"), new = c('IR15'))
-  ir30 = get_IR_FRM30(from_year)
+  ir30 = get_IR_FRM30(irfile30, from_year)
   setnames(ir30, old = c("IR"), new = c('IR30'))
   ir_data <- merge(ir15, ir30, all=FALSE)
   return(ir_data)

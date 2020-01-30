@@ -20,10 +20,19 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 # Welcome to the simple R package "rEconEnv"
-For analysing mortgage data, we need some economic data such as the Home Price Index and Interest Rate. Luckly we can get these data
-from https://www.fhfa.gov/DataTools/Downloads/Pages/House-Price-Index-Datasets.aspx and http://www.freddiemac.com/pmms.
+The Home Price Index and Interest Rate are important factors in analysis Mortgage data. In this package, we present convenient ways to get these data from https://www.fhfa.gov/DataTools/Downloads/Pages/House-Price-Index-Datasets.aspx and http://www.freddiemac.com/pmms.
 
-This package will grab data from these websites and return data in R data.table formats.
+If you have an open access to the internet, the functions of these packahe will connect to sites, then download the most recent data and process them. If your running server can't reach these sites (for example, being blocked by your corporate firewall), then you can manually download files and pass the files to the functions for parsing and processing.
+
+Here is the remote data sites used in this package:
+ * HPI - US National Level: https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_us_and_census.csv
+ * HPI - US States Level:   https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_state.csv
+ * HPI - US ZIP(3) Level:   https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_AT_3zip.xlsx         
+
+ * IR  - FRM 15:            http://www.freddiemac.com/pmms/docs/15yr_pmmsmnth.xls
+ * IR  - FRM 30:            http://www.freddiemac.com/pmms/docs/30yr_pmmsmnth.xls
+
+The data retuned from functions are in data.table format.
 
 ## Usage    
 
