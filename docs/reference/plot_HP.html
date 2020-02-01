@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • rEconEnv</title>
+<title>Plotting HPI data. — plot_HP • rEconEnv</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -32,7 +32,10 @@
 
 
 
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Plotting HPI data. — plot_HP" />
+
+<meta property="og:description" content="Plotting HPI data." />
+<meta name="twitter:card" content="summary" />
 
 
 
@@ -50,7 +53,7 @@
   </head>
 
   <body>
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -93,90 +96,58 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Plotting HPI data.</h1>
+    
+    <div class="hidden name"><code>plot_HP.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    
+    <p>Plotting HPI data.</p>
+    
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
-
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      <tr>
-        
-        <td>
-          <p><code><a href="get_IR_data.html">get_IR_data()</a></code> </p>
-        </td>
-        <td><p>get Interest Rate</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_IR_FRM15.html">get_IR_FRM15()</a></code> </p>
-        </td>
-        <td><p>get FRM 15yr interest rate</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_IR_FRM30.html">get_IR_FRM30()</a></code> </p>
-        </td>
-        <td><p>get FRM 30yr  interest rate</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_IR_FRM_15_30.html">get_IR_FRM_15_30()</a></code> </p>
-        </td>
-        <td><p>get FRM 30yr and 15yr interest rate</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_State_hpi.html">get_State_hpi()</a></code> </p>
-        </td>
-        <td><p>get State HPI data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_US_hpi.html">get_US_hpi()</a></code> </p>
-        </td>
-        <td><p>get National HPI data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="get_ZIP3_hpi.html">get_ZIP3_hpi()</a></code> </p>
-        </td>
-        <td><p>get ZIP3 HPI data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_HP.html">plot_HP()</a></code> </p>
-        </td>
-        <td><p>Plotting HPI data.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plot_IR.html">plot_IR()</a></code> </p>
-        </td>
-        <td><p>Plotting IR data.</p></td>
-      </tr>
-    </tbody>
+    <pre class="usage"><span class='fu'>plot_HP</span>(<span class='no'>dt</span>, <span class='kw'>regionnames</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>title</span> <span class='kw'>=</span> <span class='st'>"Home Price Index"</span>)</pre>
+    
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>dt</th>
+      <td><p>HPI data</p></td>
+    </tr>
+    <tr>
+      <th>regionnames</th>
+      <td><p>either a list of State Names or a list of ZIP3 codes.</p></td>
+    </tr>
+    <tr>
+      <th>title</th>
+      <td><p>Title appearing the chart</p></td>
+    </tr>
     </table>
-  </div>
+    
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
+    <p>dygraphs object</p>
+    
+
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>     <span class='co'># get recent ZIP3 Home Price Index (quarterly) since 2005</span>
+     <span class='no'>zip3hpi_Q</span>    <span class='kw'>&lt;-</span> <span class='fu'><a href='get_ZIP3_hpi.html'>get_ZIP3_hpi</a></span>(<span class='kw'>from_year</span><span class='kw'>=</span><span class='fl'>2005</span>, <span class='kw'>out.Monthly</span><span class='kw'>=</span><span class='fl'>FALSE</span>)
+     <span class='fu'>plot_HP</span>(<span class='kw'>dt</span><span class='kw'>=</span><span class='no'>zip3hpi_Q</span>,  <span class='kw'>regionnames</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"010"</span>, <span class='st'>"011"</span>, <span class='st'>"012"</span>) , <span class='kw'>title</span><span class='kw'>=</span><span class='st'>"Quarterly HPI for selected zips"</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required namespace: dygraphs</span></div><div class='output co'>#&gt; <span class='error'>Error in dygraph(data, main = title): could not find function "dygraph"</span></div></pre>
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
-      <li><a href="#section-all-functions">All functions</a></li>
+      <li><a href="#arguments">Arguments</a></li>
+      
+      <li><a href="#value">Value</a></li>
+      
+      <li><a href="#examples">Examples</a></li>
     </ul>
+
   </div>
 </div>
 

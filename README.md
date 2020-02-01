@@ -7,11 +7,11 @@ Jan. 30, 2020
 
 <!-- badges: start -->
 
-<!-- badges: end -->
-
-# Welcome to the simple R package “rEconEnv”
-
-The Home Price Index and Interest Rate are important factors in analysis
+[![Project Status: WIP – Initial development is in progress, but there
+has not yet been a stable, usable release suitable for the
+public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+<!-- badges: end --> \# Welcome to the simple R package “rEconEnv” The
+Home Price Index and Interest Rate are important factors in analysis
 Mortgage data. In this package, we present convenient ways to get these
 data from
 <https://www.fhfa.gov/DataTools/Downloads/Pages/House-Price-Index-Datasets.aspx>
@@ -41,9 +41,16 @@ Here is the remote data locations used in this package:
 
 The data retuned from functions are in data.table format.
 
+## Installation
+
+``` r
+devtools::install_github("xdderekchen/rEconEnv")
+```
+
 ## Usage
 
-(for plotting data, read [here](file:///C:/AWS/rEconEnv/Examples.html) )
+(for plotting data, read
+[here](https://xdderekchen.github.io/rEconEnv/Examples.html) )
 
 #### Use the libraries:
 
